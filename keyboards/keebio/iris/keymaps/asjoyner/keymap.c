@@ -122,18 +122,32 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 void encoder_update_user(uint8_t index, bool clockwise) {
     dprintf("encoder %d, clockwise: %d\r\n", index, clockwise);
     if (index == 0) {
-        if (clockwise) {
-            tap_code(KC_VOLU);
-        } else {
-            tap_code(KC_VOLD);
-        }
+	    // there's only one encoder on my keyboard, at index 1
     }
     else if (index == 1) {
-        if (clockwise) {
-            tap_code(KC_PGDN);
-        } else {
-            tap_code(KC_PGUP);
-        }
+        switch(biton32(layer_state)){
+		case 1: // Left modifier == LOWER
+			if (clockwise) {
+			    tap_code(KC_VOLU);
+			} else {
+			    tap_code(KC_VOLD);
+			}
+			break;
+		case 2: // Right modifier == RAISE
+			if (clockwise) {
+			    tap_code(KC_PGDN);
+			} else {
+			    tap_code(KC_PGUP);
+			}
+			break;
+		default:
+			if (clockwise) {
+			    tap_code(KC_DOWN);
+			} else {
+			    tap_code(KC_UP);
+			}
+			break;
+	}
     }
 }
 
