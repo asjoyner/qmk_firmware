@@ -12,6 +12,8 @@ enum custom_keycodes {
   RAISE,
   ADJUST,
   GOERR,
+  CAPSCR,
+  CAPAREA,
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -36,7 +38,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
     A(KC_TAB),  KC_6,    KC_7,  GOERR,    KC_9,    KC_0,                              _______, KC_MINS, KC_EQL,  KC_LBRC, KC_RBRC, KC_PGDN,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-     KC_TRNS,  _______, KC_LEFT, KC_RGHT, KC_UP,   KC_LBRC,                            KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, KC_PLUS, KC_HOME,
+     KC_TRNS, _______, CAPAREA, KC_RGHT, KC_UP,   KC_LBRC,                            KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, KC_PLUS, KC_HOME,
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
      KC_TRNS, _______, _______, _______, KC_DOWN, KC_LCBR, KC_LPRN,          KC_RPRN, KC_RCBR, KC_P1,   KC_P2,   KC_P3,   KC_MINS, KC_END,
   //└────────┴────────┴────────┴───┬────┴───┬────┴───┬────┴───┬────┘        └───┬────┴───┬────┴───┬────┴───┬────┴────────┴────────┴────────┘
@@ -48,7 +50,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //┌────────┬────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┬────────┐
      KC_F12,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,                              KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-     RGB_TOG, KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,                            KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, _______,
+     RGB_TOG, KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,                            KC_CIRC, KC_AMPR, KC_ASTR, _______, CAPSCR, _______,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
      RGB_MOD, KC_MPRV, KC_MNXT, KC_VOLU, _______,  _______,                            KC_EQL,  KC_HOME, RGB_HUI, RGB_SAI, RGB_VAI, _______,
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
@@ -112,6 +114,33 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     case GOERR:
       if (record->event.pressed) {
 	SEND_STRING("if err != nil {\n");
+      }
+      return false;
+      break;
+    // CAPSCR and CAPAREA don't use tap_code() because of a bug in
+    // gnomescreenshot: https://bugzilla.gnome.org/show_bug.cgi?id=682626
+    // It tries to grab the keyboard at startup, and if you still are holding
+    // the print screen button when it starts, it exits.  tap_code holds the
+    // key for 100ms by default, which reliably triggers the bug.
+    case CAPSCR:
+      if (record->event.pressed) {
+	register_code(KC_LCTL);
+	register_code(KC_PSCREEN);
+	unregister_code(KC_PSCREEN);
+	unregister_code(KC_LCTL);
+	tap_code(KC_PSCREEN);
+      }
+      return false;
+      break;
+    // Nb: see comment above CAPSCR
+    case CAPAREA:
+      if (record->event.pressed) {
+	register_code(KC_LSFT);
+	register_code(KC_LCTL);
+	register_code(KC_PSCREEN);
+	unregister_code(KC_PSCREEN);
+	unregister_code(KC_LSFT);
+	unregister_code(KC_LCTL);
       }
       return false;
       break;
