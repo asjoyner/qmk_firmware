@@ -12,6 +12,7 @@ enum custom_keycodes {
   RAISE,
   ADJUST,
   GOERR,
+  TMARK,
   CAPSCR,
   CAPAREA,
 };
@@ -36,7 +37,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //┌────────┬────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┬────────┐
      KC_TILD, KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,                            KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_PGUP,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-    A(KC_TAB),  KC_6,    KC_7,  GOERR,    KC_9,    KC_0,                              _______, KC_MINS, KC_EQL,  KC_LBRC, KC_RBRC, KC_PGDN,
+    A(KC_TAB),  KC_6,    KC_7,  GOERR,   _______, TMARK,                              _______, KC_MINS, KC_EQL,  KC_LBRC, KC_RBRC, KC_PGDN,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
      KC_TRNS, _______, CAPAREA, KC_RGHT, KC_UP,   KC_LBRC,                            KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, KC_PLUS, KC_HOME,
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
@@ -114,6 +115,21 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     case GOERR:
       if (record->event.pressed) {
 	SEND_STRING("if err != nil {\n");
+      }
+      return false;
+      break;
+    case TMARK:
+      if (record->event.pressed) {
+	register_code(KC_LCTL);
+	register_code(KC_LSFT);
+	tap_code(KC_U);
+	unregister_code(KC_LSFT);
+	unregister_code(KC_LCTL);
+	tap_code(KC_2);
+	tap_code(KC_1);
+	tap_code(KC_2);
+	tap_code(KC_2);
+	tap_code(KC_ENT);
       }
       return false;
       break;
